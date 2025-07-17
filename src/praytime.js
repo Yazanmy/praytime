@@ -1,27 +1,28 @@
 
-// praytime.js - Prayer Times Calculator (v3.1)
+// praytime.js - Prayer Times Calculator (v3.2)
 // Copyright (c) 2007-2025 Hamid Zarrabi-Zadeh
+// Source: https://praytimes.org
 // License: MIT
-// https://praytime.info
 
 
 //------------------------- User Interface ------------------------
 /*
     method(method)          // set calculation method
     location(coordinates)   // set location
+    timezone(timezone)      // set timezone
     utcOffset(number)       // set UTC offset in minutes or hours
     adjust(parameters)      // adjust calculation parameters
     tune(mins)              // tune times by given minutes
     format(format)          // options: 24h, 12h, 12H, x, X
     round(method)           // options: nearest, up, down, none
-    times(date)             // options: date, array, timestamp
+    getTimes(date)          // options: date, array, timestamp
 
 
 //------------------------- Sample Usage --------------------------
 
     const praytime = new PrayTime('ISNA');
-    praytime.location([43, -80]).utcOffset(-5);
-    console.log(praytime.times());
+    praytime.location([43, -80]).timezone('America/Toronto');
+    praytime.getTimes();
 
 */
 //------------------------- PrayTime Class ------------------------
@@ -38,6 +39,9 @@ class PrayTime {
             Karachi: { fajr: 18, isha: 18 },
             Tehran: { fajr: 17.7, maghrib: 4.5, midnight: 'Jafari' },
             Jafari: { fajr: 16, maghrib: 4, midnight: 'Jafari' },
+            France: { fajr: 12, isha: 12 },
+            Russia: { fajr: 16, isha: 15 },
+            Singapore: { fajr: 20, isha: 18 },
             defaults: { isha: 14, maghrib: '1 min', midnight: 'Standard' }
         };
 
@@ -49,6 +53,7 @@ class PrayTime {
             format: '24h',
             rounding: 'nearest',
             utcOffset: 'auto',
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             location: [0, -(new Date()).getTimezoneOffset() / 4],
             iterations: 1
         };
@@ -79,6 +84,11 @@ class PrayTime {
         return this.set({ location });
     }
 
+    // set timezone
+    timezone(timezone) {
+        return this.set({ timezone });
+    }
+
     // set tuning minutes
     tune(tune) {
         return this.set({ tune });
@@ -104,6 +114,7 @@ class PrayTime {
     utcOffset(utcOffset = 'auto') {
         if (typeof utcOffset === 'number' && Math.abs(utcOffset) < 16)
             utcOffset *= 60;
+        this.set({ timezone: 'UTC' });
         return this.set({ utcOffset });
     }
 
@@ -123,15 +134,16 @@ class PrayTime {
         return times;
     }
 
-
-    //---------------------- Deprecated -------------------------
-
-    // deprecated: get prayer times
+    // get prayer times (backward compatible)
     getTimes(date, location, timezone = 'auto', dst = 0, format = '24h') {
+        if (!location) return this.times(date);
         const utcOffset = (timezone == 'auto') ? timezone : timezone + dst;
         this.location(location).utcOffset(utcOffset).format(format);
         return this.times(date);
     }
+
+
+    //---------------------- Deprecated -------------------------
 
     // deprecated: set calculation method
     setMethod(method) {
@@ -330,24 +342,19 @@ class PrayTime {
 
     // convert time to string
     timeToString(timestamp, format) {
-        const date = new Date(timestamp);
         const utcOffset = this.settings.utcOffset;
-        const minsDiff = (utcOffset == 'auto') ? -date.getTimezoneOffset() : utcOffset;
-        const mins = date.getUTCHours() * 60 + date.getUTCMinutes() + minsDiff;
-        const hours = this.mod(Math.floor(mins / 60), 24);
-        const hour = format.toLowerCase() == '12h' ? this.mod(hours - 1, 12) + 1 : this.twoDigits(hours);
-        const minutes = this.twoDigits(Math.trunc(this.mod(mins, 60)));
-        const suffix = (format == '12H') ? ['AM', 'PM'][hours < 12 ? 0 : 1] : '';
-        return hour + ':' + minutes + (suffix ? ' ' + suffix : '');
+        const date = new Date(timestamp + (utcOffset == 'auto' ? 0 : utcOffset) * 6e4);
+        const str = date.toLocaleTimeString('en-US', {
+            timeZone: this.settings.timezone,
+            hour12: format == '24h' ? false : true,
+            hour: format == '24h' ? '2-digit' : 'numeric',
+            minute: '2-digit'
+        });
+        return format == '12H' ? str.replace(/ ?[AP]M/, '') : str;
     }
 
 
     //---------------------- Misc Functions -----------------------
-
-    // add padding zero
-    twoDigits(num) {
-        return String(num).padStart(2, '0');
-    }
 
     // convert string to number
     value(str) {
@@ -383,8 +390,8 @@ class PrayTime {
 }
 
 
-//------------------------- Node.js Export ------------------------
+//------------------------- Export ------------------------
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { PrayTime };
-} 
+}

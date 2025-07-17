@@ -1,10 +1,10 @@
 {
     "name": "praytime",
-    "version": "3.1.0",
+    "version": "3.2.0",
     "description": "A JavaScript library for calculating prayer times.",
     "author": "Hamid Zarrabi-Zadeh",
     "license": "MIT",
-    "homepage": "https://praytime.info",
+    "homepage": "https://praytimes.org",
     "main": "src/praytime.js",
     "scripts": {
         "test": "npx jest --rootDir tests"

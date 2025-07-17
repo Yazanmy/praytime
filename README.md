@@ -6,13 +6,13 @@ A JavaScript library for calculating prayer times.
 
 ## Live Demo ##
 
-- [PrayTime.info](https://praytime.info)
+- [PrayTimes.org](https://praytimes.org)
 
 ## Resources
 
-- [User Manual](https://praytime.info/manual)
-- [Documentation](https://praytime.info/docs/)
-- [Changelog](https://praytime.info/docs/changelog)
+- [User Manual](https://praytimes.org/manual)
+- [Documentation](https://praytimes.org/docs/)
+- [Changelog](https://praytimes.org/docs/changelog)
 
 ## License
 
