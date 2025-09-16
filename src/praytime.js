@@ -42,6 +42,7 @@ class PrayTime {
             France: { fajr: 12, isha: 12 },
             Russia: { fajr: 16, isha: 15 },
             Singapore: { fajr: 20, isha: 18 },
+            Jordan: { fajr: 18, maghrib: 5, isha: 18 },
             defaults: { isha: 14, maghrib: '1 min', midnight: 'Standard' }
         };
 
